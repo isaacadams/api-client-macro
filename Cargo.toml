@@ -1,6 +1,6 @@
 [package]
 name = "api-client-macro"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Declaratively express a REST API client"
 license = "MIT OR Apache-2.0"
@@ -9,6 +9,6 @@ repository = "https://github.com/isaacadams/api-client-macro"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
+[dev-dependencies]
 reqwest = {version = "0.11.17", features = ["blocking", "json"]}
 paste = "1.0.12"
