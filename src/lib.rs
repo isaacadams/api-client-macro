@@ -44,38 +44,30 @@ macro_rules! generate {
                 }
             }
 
-            pub mod blocking {
-                use super::*;
-
-                impl [<$client_type Builder>]<reqwest::blocking::Client> {
+            impl [<$client_type Builder>]<reqwest::blocking::Client> {
+                $(
                     $(
-                        $(
-                            #[allow(dead_code)]
-                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
-                                println!("{} {}", stringify!([<$method:upper>]), &url);
-                                self.client.$method(&url)
-                            }
-                        )*
+                        #[allow(dead_code)]
+                        pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
+                            let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                            println!("{} {}", stringify!([<$method:upper>]), &url);
+                            self.client.$method(&url)
+                        }
                     )*
-                }
+                )*
             }
 
-            pub mod asynchronous {
-                use super::*;
-
-                impl [<$client_type Builder>]<reqwest::Client> {
+            impl [<$client_type Builder>]<reqwest::Client> {
+                $(
                     $(
-                        $(
-                            #[allow(dead_code)]
-                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
-                                println!("{} {}", stringify!([<$method:upper>]), &url);
-                                self.client.$method(&url)
-                            }
-                        )*
+                        #[allow(dead_code)]
+                        pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
+                            let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                            println!("{} {}", stringify!([<$method:upper>]), &url);
+                            self.client.$method(&url)
+                        }
                     )*
-                }
+                )*
             }
         }
     };
