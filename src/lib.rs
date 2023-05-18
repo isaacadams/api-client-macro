@@ -30,44 +30,68 @@ macro_rules! generate {
         ),* $(,)?
     }) => {
         paste::paste! {
-            pub struct [<$client_type Builder>]<T> {
-                base_url: String,
-                client: T,
-            }
+            mod internal {
+                pub struct [<$client_type Builder>]<T> {
+                    pub(crate) base_url: String,
+                    pub(crate) client: T,
+                }
 
-            impl<T> [<$client_type Builder>]<T> where T: Default {
-                pub fn new(base_url: &str, client: Option<T>) -> Self {
-                    Self {
-                        base_url: base_url.to_string(),
-                        client: client.unwrap_or_default(),
+                impl<T> [<$client_type Builder>]<T> where T: Default {
+                    pub fn new(base_url: &str, client: Option<T>) -> Self {
+                        Self {
+                            base_url: base_url.to_string(),
+                            client: client.unwrap_or_default(),
+                        }
                     }
                 }
             }
 
-            impl [<$client_type Builder>]<reqwest::blocking::Client> {
-                $(
+            pub mod blocking {
+                use super::internal::*;
+
+                pub type Client = reqwest::blocking::Client;
+                pub type Builder = [<$client_type Builder>]<Client>;
+
+                pub fn new(base_url: &str, client: Option<Client>) -> Builder {
+                    Builder::new(base_url, client)
+                }
+
+                impl Builder {
                     $(
-                        #[allow(dead_code)]
-                        pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
-                            let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
-                            println!("{} {}", stringify!([<$method:upper>]), &url);
-                            self.client.$method(&url)
-                        }
+                        $(
+                            #[allow(dead_code)]
+                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                                println!("{} {}", stringify!([<$method:upper>]), &url);
+                                self.client.$method(&url)
+                            }
+                        )*
                     )*
-                )*
+                }
             }
 
-            impl [<$client_type Builder>]<reqwest::Client> {
-                $(
+            pub mod asynchronous {
+                use super::internal::*;
+
+                pub type Client = reqwest::Client;
+                pub type Builder = [<$client_type Builder>]<Client>;
+
+                pub fn new(base_url: &str, client: Option<Client>) -> Builder {
+                    Builder::new(base_url, client)
+                }
+
+                impl Builder {
                     $(
-                        #[allow(dead_code)]
-                        pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
-                            let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
-                            println!("{} {}", stringify!([<$method:upper>]), &url);
-                            self.client.$method(&url)
-                        }
+                        $(
+                            #[allow(dead_code)]
+                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                                println!("{} {}", stringify!([<$method:upper>]), &url);
+                                self.client.$method(&url)
+                            }
+                        )*
                     )*
-                )*
+                }
             }
         }
     };
