@@ -1,5 +1,3 @@
-//pub use crate::generate_reqwest_client;
-
 #[macro_export]
 ///
 /// easily creates an api client
@@ -7,16 +5,16 @@
 /// ```rust
 /// api_client_macro::generate!(ApiClient, {
 ///     user {
-///         get_by_id: get "user/{id}" id: &str,
-///         delete_by_id: delete "user/{id}" id: &str,
-///         create: post "user",
-///         list: get "users"
+///         get     "user/{id}": get_by_id(id: &str),
+///         delete  "user/{id}": delete_by_id(id: &str),
+///         post    "user": create(),
+///         get     "users": list()
 ///     },
 ///     contact {
-///         get_by_id: get "contact/{id}" id: &str,
-///         delete_by_id: delete "contact/{id}" id: &str,
-///         create: post "contact",
-///         list: get "contact"
+///         get     "contact/{id}": get_by_id(id: &str),
+///         delete  "contact/{id}": delete_by_id(id: &str),
+///         post    "contact": create(),
+///         get     "contact": list()
 ///     }
 /// });
 /// ```
@@ -26,31 +24,12 @@ macro_rules! generate {
         $(
             $resource:ident {
                 $(
-                    $name:ident: $method:ident $url:literal $($param:ident : $type:ty)*
-                ),+
-             }
-        ),+
+                    $method:ident $url:literal: $function_name:ident($($param:ident : $type:ty),*)
+                ),* $(,)?
+            }
+        ),* $(,)?
     }) => {
-        /* pub struct ApiClientHelper {
-            base_url: String,
-            client: reqwest::blocking::Client,
-        } */
-
         paste::paste! {
-
-            /* pub mod [<$client_type:snake>] {
-                $(
-                    pub mod [<$resource:snake>] {
-                        $(
-                            pub fn [<$name:snake>](helper: &super::super::ApiClientHelper $(, $param: $type)*) -> reqwest::blocking::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), helper.base_url $(, $param = $param)*);
-                                helper.client.$method(&url)
-                            }
-                        )+
-                    }
-                ),+
-            } */
-
             pub struct [<$client_type Builder>] {
                 base_url: String,
                 client: reqwest::blocking::Client,
@@ -66,14 +45,15 @@ macro_rules! generate {
 
                 $(
                     $(
-                        pub fn [<$resource _ $name>](&self $(, $param: $type)*) -> reqwest::blocking::RequestBuilder {
+                        #[allow(dead_code)]
+                        pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
                             let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
                             println!("{} {}", stringify!([<$method:upper>]), &url);
                             self.client.$method(&url)
                         }
-                    )+
-                )+
+                    )*
+                )*
             }
         }
-    };
+    }
 }
