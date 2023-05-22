@@ -61,7 +61,7 @@ macro_rules! generate {
                         $(
                             #[allow(dead_code)]
                             pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = stringify!($param) )*);
                                 println!("{} {}", stringify!([<$method:upper>]), &url);
                                 self.client.$method(&url)
                             }
@@ -85,7 +85,7 @@ macro_rules! generate {
                         $(
                             #[allow(dead_code)]
                             pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = $param)*);
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = stringify!($param) )*);
                                 println!("{} {}", stringify!([<$method:upper>]), &url);
                                 self.client.$method(&url)
                             }
