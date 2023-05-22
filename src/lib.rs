@@ -4,18 +4,48 @@
 /// ```rust
 /// api_client_macro::generate!(ApiClient, {
 ///     user {
-///         get     "user/{id}": get_by_id(id: &str),
-///         delete  "user/{id}": delete_by_id(id: &str),
-///         post    "user": create(),
-///         get     "users": list()
+///         #[get "user/{}"]
+///         get_by_id(id: &str),
+/// 
+///         #[delete "user/{}"]
+///         delete_by_id(id: &str),
+/// 
+///         #[post "user"]
+///         create(),
+/// 
+///         #[get "users"]
+///         list()
 ///     },
 ///     contact {
-///         get     "contact/{id}": get_by_id(id: &str),
-///         delete  "contact/{id}": delete_by_id(id: &str),
-///         post    "contact": create(),
-///         get     "contact": list()
+///         #[get "contact/{}"]
+///         get_by_id(id: &str),
+/// 
+///         #[delete "contact/{}"]
+///         delete_by_id(id: &str),
+/// 
+///         #[post "contact"]
+///         create(),
+/// 
+///         #[get "contact"]
+///         list()
 ///     }
 /// });
+/// 
+/// fn main() {}
+/// 
+/// async fn main_async() {
+///     let client = asynchronous::Builder::new("base_url", None);
+///     client.contact_create().body("<body>").send().await.unwrap();
+///     client.contact_get_by_id("<id>").send().await.unwrap();
+///     client.user_list().query(&[("email", "<email>")]).send().await.unwrap();
+/// }
+/// 
+/// fn main_blocking() {
+///     let client = blocking::Builder::new("base_url", None);
+///     client.contact_create().body("<body>").send().unwrap();
+///     client.contact_get_by_id("<id>").send().unwrap();
+///     client.user_list().query(&[("email", "<email>")]).send().unwrap();
+/// }
 /// ```
 ///
 #[macro_export]
@@ -24,7 +54,8 @@ macro_rules! generate {
         $(
             $resource:ident {
                 $(
-                    $method:ident $url:literal: $function_name:ident($($param:ident : $type:ty),*)
+                    #[$method:ident $url:literal]
+                    $function:ident($($param:ident : $type:ty),*)
                 ),* $(,)?
             }
         ),* $(,)?
@@ -60,8 +91,8 @@ macro_rules! generate {
                     $(
                         $(
                             #[allow(dead_code)]
-                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = stringify!($param) )*);
+                            pub fn [<$resource _ $function>](&self $(,$param: $type)*) -> reqwest::blocking::RequestBuilder {
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param )*);
                                 println!("{} {}", stringify!([<$method:upper>]), &url);
                                 self.client.$method(&url)
                             }
@@ -84,8 +115,8 @@ macro_rules! generate {
                     $(
                         $(
                             #[allow(dead_code)]
-                            pub fn [<$resource _ $function_name>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
-                                let url = format!(concat!("{}/", $url), self.base_url $(, $param = stringify!($param) )*);
+                            pub fn [<$resource _ $function>](&self $(,$param: $type)*) -> reqwest::RequestBuilder {
+                                let url = format!(concat!("{}/", $url), self.base_url $(, $param )*);
                                 println!("{} {}", stringify!([<$method:upper>]), &url);
                                 self.client.$method(&url)
                             }

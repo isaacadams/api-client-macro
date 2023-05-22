@@ -9,16 +9,30 @@ A reqwest powered REST API client can be generated using `api_client_macro::gene
 ```rust
 api_client_macro::generate!(ApiClient, {
     user {
-        get     "user/{id}": get_by_id(id: &str),
-        delete  "user/{id}": delete_by_id(id: &str),
-        post    "user": create(),
-        get     "users": list()
+        #[get "user/{}"]
+        get_by_id(id: &str),
+
+        #[delete "user/{}"]
+        delete_by_id(id: &str),
+
+        #[post "user"]
+        create(),
+
+        #[get "users"]
+        list()
     },
     contact {
-        get     "contact/{id}": get_by_id(id: &str),
-        delete  "contact/{id}": delete_by_id(id: &str),
-        post    "contact": create(),
-        get     "contact": list()
+        #[get "contact/{}"]
+        get_by_id(id: &str),
+
+        #[delete "contact/{}"]
+        delete_by_id(id: &str),
+
+        #[post "contact"]
+        create(),
+
+        #[get "contact"]
+        list()
     }
 });
 ```
@@ -27,14 +41,14 @@ After compilation, the following code is available.
 
 ```rust
 async fn main_async() {
-    let client = ApiClientBuilder::<reqwest::Client>::new("base_url", None);
+    let client = asynchronous::Builder::new("base_url", None);
     client.contact_create().body("<body>").send().await.unwrap();
     client.contact_get_by_id("<id>").send().await.unwrap();
     client.user_list().query(&[("email", "<email>")]).send().await.unwrap();
 }
 
 fn main_blocking() {
-    let client = ApiClientBuilder::<reqwest::blocking::Client>::new("base_url", None);
+    let client = blocking::Builder::new("base_url", None);
     client.contact_create().body("<body>").send().unwrap();
     client.contact_get_by_id("<id>").send().unwrap();
     client.user_list().query(&[("email", "<email>")]).send().unwrap();
